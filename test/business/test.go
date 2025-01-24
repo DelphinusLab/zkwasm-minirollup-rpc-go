@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 
 	"github.com/DelphinusLab/zkwasm-minirollup-rpc-go/zkwasm"
@@ -72,7 +73,8 @@ func main() {
 	//clearRanch(zkwamRpc, prikey)
 
 	// 充值
-	deposit(zkwamRpc, "126532")
+	//deposit(zkwamRpc, "126532")
+	withdraw(zkwamRpc, prikey)
 
 	// 查询状态
 	getState(zkwamRpc, prikey)
@@ -181,4 +183,14 @@ func deposit(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	cmd := zkwamRpc.CreateCommand(nonce, DepositCmd, []*big.Int{pid1, pid2, ranchId, propType})
 	transaction, _ := zkwamRpc.SendTransaction(cmd, prikey)
 	fmt.Println("充值:", transaction)
+}
+
+// 提现
+func withdraw(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
+	fmt.Println("提现")
+	nonce, _ := zkwamRpc.GetNonce(prikey)
+	address := common.HexToAddress("0xae1e3ffa0a95b7c11cfd0a8f02d3250f20b51ff2")
+	cmd, _ := zkwamRpc.ComposeWithdrawParams(address, nonce, WithdrawCmd, big.NewInt(100), big.NewInt(0))
+	transaction, _ := zkwamRpc.SendTransaction(cmd, prikey)
+	fmt.Println("提现:", transaction)
 }

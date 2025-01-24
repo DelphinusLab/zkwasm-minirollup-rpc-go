@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"net/http"
 	"time"
@@ -75,6 +76,15 @@ func (rpc *ZKWasmAppRpc) SendTransaction(cmd []*big.Int, prikey string) (string,
 	return "", errors.New("MonitorTransactionFail")
 }
 
+func (rpc *ZKWasmAppRpc) ComposeWithdrawParams(address common.Address, nonce, command, amount, tokenIndex *big.Int) ([]*big.Int, error) {
+	addressBytes := address.Bytes()
+	firstLimb := new(big.Int).SetBytes(reverseBytes(addressBytes[:4]))
+	sndLimb := new(big.Int).SetBytes(reverseBytes(addressBytes[4:12]))
+	thirdLimb := new(big.Int).SetBytes(reverseBytes(addressBytes[12:20]))
+	one := new(big.Int).Add(new(big.Int).Lsh(firstLimb, 32), amount)
+	return rpc.CreateCommand(nonce, command, []*big.Int{tokenIndex, one, sndLimb, thirdLimb}), nil
+}
+
 func (rpc *ZKWasmAppRpc) QueryState(prikey string) (map[string]interface{}, error) {
 	data := Query(prikey)
 	jsonData, err := json.Marshal(data)
@@ -124,7 +134,7 @@ func (rpc *ZKWasmAppRpc) CreateCommand(nonce, command *big.Int, params []*big.In
 
 	buf := []*big.Int{cmd}
 	buf = append(buf, params...)
-	fmt.Println(buf)
+	fmt.Println("CreateCommand", buf)
 	return buf
 }
 
