@@ -35,7 +35,7 @@ func main() {
 	//transaction, _ := zkwamRpc.SendTransaction([4]*big.Int{cmd, big.NewInt(1), big.NewInt(1), big.NewInt(0)}, prikey)
 	//fmt.Println("transaction:", transaction)
 	// 初始化玩家
-	initPlayer(zkwamRpc, prikey)
+	//initPlayer(zkwamRpc, prikey)
 	// 购买宠物
 	buyElf(zkwamRpc, prikey)
 	// 收集金币
@@ -45,7 +45,7 @@ func main() {
 	//clearRanch(zkwamRpc, prikey)
 
 	// 充值
-	deposit(zkwamRpc, prikey)
+	//deposit(zkwamRpc, prikey)
 
 	// 查询状态
 	state, _ = zkwamRpc.QueryState(prikey)
