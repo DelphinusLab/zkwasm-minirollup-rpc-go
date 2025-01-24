@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/DelphinusLab/zkwasm-minirollup-rpc-go/zkwasm"
 	"math/big"
+
+	"github.com/DelphinusLab/zkwasm-minirollup-rpc-go/zkwasm"
 )
 
 var (
@@ -35,9 +36,9 @@ func main() {
 	//transaction, _ := zkwamRpc.SendTransaction([4]*big.Int{cmd, big.NewInt(1), big.NewInt(1), big.NewInt(0)}, prikey)
 	//fmt.Println("transaction:", transaction)
 	// 初始化玩家
-	//initPlayer(zkwamRpc, prikey)
+	initPlayer(zkwamRpc, prikey)
 	// 购买宠物
-	buyElf(zkwamRpc, prikey)
+	//buyElf(zkwamRpc, prikey)
 	// 收集金币
 	//collectCoin(zkwamRpc, prikey)
 
@@ -56,7 +57,7 @@ func main() {
 func initPlayer(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	// 获取配置
 	cmd := zkwamRpc.CreateCommand(big.NewInt(0), InitPlayerCmd, big.NewInt(0))
-	transaction, _ := zkwamRpc.SendTransaction([4]*big.Int{cmd, big.NewInt(0), big.NewInt(0), big.NewInt(0)}, prikey)
+	transaction, _ := zkwamRpc.SendTransaction([]*big.Int{cmd, big.NewInt(0), big.NewInt(0), big.NewInt(0)}, prikey)
 	fmt.Println("transaction:", transaction)
 }
 
@@ -66,7 +67,7 @@ func buyElf(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	ranchId := big.NewInt(1)
 	elfType := big.NewInt(1)
 	cmd := zkwamRpc.CreateCommand(nonce, BuyElfCmd, big.NewInt(0))
-	transaction, _ := zkwamRpc.SendTransaction([4]*big.Int{cmd, ranchId, elfType, big.NewInt(0)}, prikey)
+	transaction, _ := zkwamRpc.SendTransaction([]*big.Int{cmd, ranchId, elfType, big.NewInt(0)}, prikey)
 	fmt.Println("transaction:", transaction)
 }
 
@@ -76,7 +77,7 @@ func collectCoin(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	ranchId := big.NewInt(1)
 	elfId := big.NewInt(1)
 	cmd := zkwamRpc.CreateCommand(nonce, CollectCoinCmd, big.NewInt(0))
-	transaction, _ := zkwamRpc.SendTransaction([4]*big.Int{cmd, ranchId, elfId, big.NewInt(0)}, prikey)
+	transaction, _ := zkwamRpc.SendTransaction([]*big.Int{cmd, ranchId, elfId, big.NewInt(0)}, prikey)
 	fmt.Println("transaction:", transaction)
 }
 
@@ -85,7 +86,7 @@ func clearRanch(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	nonce, _ := zkwamRpc.GetNonce(prikey)
 	ranchId := big.NewInt(1)
 	cmd := zkwamRpc.CreateCommand(nonce, CleanRanchCmd, big.NewInt(0))
-	transaction, _ := zkwamRpc.SendTransaction([4]*big.Int{cmd, ranchId, big.NewInt(0), big.NewInt(0)}, prikey)
+	transaction, _ := zkwamRpc.SendTransaction([]*big.Int{cmd, ranchId, big.NewInt(0), big.NewInt(0)}, prikey)
 	fmt.Println("transaction:", transaction)
 }
 
@@ -96,6 +97,6 @@ func deposit(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	depositP := new(big.Int).Lsh(ranchId, 32)
 	depositP.Add(depositP, propType)
 	cmd := zkwamRpc.CreateCommand(big.NewInt(0), DepositCmd, big.NewInt(0))
-	transaction, _ := zkwamRpc.SendTransaction([4]*big.Int{cmd, pid1, pid2, depositP}, prikey)
+	transaction, _ := zkwamRpc.SendTransaction([]*big.Int{cmd, pid1, pid2, depositP}, prikey)
 	fmt.Println("transaction:", transaction)
 }

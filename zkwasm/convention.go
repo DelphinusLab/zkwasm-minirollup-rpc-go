@@ -131,7 +131,7 @@ func (pc *PlayerConvention) Deposit(pid1, pid2, amount *big.Int) (string, error)
 	if err != nil {
 		return "", err
 	}
-	return pc.rpc.SendTransaction([4]*big.Int{
+	return pc.rpc.SendTransaction([]*big.Int{
 		pc.createCommand(nonce, pc.commandDeposit, big.NewInt(0)),
 		pid1,
 		pid2,
@@ -148,7 +148,7 @@ func (pc *PlayerConvention) WithdrawRewards(address string, amount *big.Int) (st
 	if err != nil {
 		return "", err
 	}
-	return pc.rpc.SendTransaction([4]*big.Int{
+	return pc.rpc.SendTransaction([]*big.Int{
 		pc.createCommand(nonce, pc.commandWithdraw, big.NewInt(0)),
 		params[0],
 		params[1],

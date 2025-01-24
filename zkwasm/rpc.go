@@ -22,7 +22,7 @@ func NewZKWasmAppRpc(baseURL string) *ZKWasmAppRpc {
 	}
 }
 
-func (rpc *ZKWasmAppRpc) sendRawTransaction(cmd [4]*big.Int, prikey string) (map[string]interface{}, error) {
+func (rpc *ZKWasmAppRpc) sendRawTransaction(cmd []*big.Int, prikey string) (map[string]interface{}, error) {
 	data := Sign(cmd, prikey)
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -45,7 +45,7 @@ func (rpc *ZKWasmAppRpc) sendRawTransaction(cmd [4]*big.Int, prikey string) (map
 	return nil, errors.New("SendTransactionError")
 }
 
-func (rpc *ZKWasmAppRpc) SendTransaction(cmd [4]*big.Int, prikey string) (string, error) {
+func (rpc *ZKWasmAppRpc) SendTransaction(cmd []*big.Int, prikey string) (string, error) {
 	resp, err := rpc.sendRawTransaction(cmd, prikey)
 	if err != nil {
 		return "", err

@@ -103,30 +103,37 @@ func VerifySign(msg *LeHexInt, pkx, pky, rx, ry *LeHexInt, s *LeHexInt) bool {
 }
 
 // Sign signs a command using a private key
-func Sign(cmd [4]*big.Int, prikey string) map[string]string {
+func Sign(cmd []*big.Int, prikey string) map[string]string {
 	pkey := PrivateKeyFromString(prikey)
 	r := pkey.R()
 	R := PointBase().Mul((*Field)(r))
-	bigCmd0 := cmd[0] // cmd[0]
-	bigCmd1 := cmd[1] // cmd[1]
-	bigCmd2 := cmd[2] // cmd[2]
-	bigCmd3 := cmd[3] // cmd[3]
 
-	// Shift the values by 64, 128, 192 bits
-	shifted1 := new(big.Int).Lsh(bigCmd1, 64)  // cmd[1] << 64
-	shifted2 := new(big.Int).Lsh(bigCmd2, 128) // cmd[2] << 128
-	shifted3 := new(big.Int).Lsh(bigCmd3, 192) // cmd[3] << 192
-
-	// Add them all together
-	H := new(big.Int).Add(bigCmd0, shifted1) // cmd[0] + shifted1
-	H.Add(H, shifted2)                       // Add shifted2
-	H.Add(H, shifted3)
+	var H *big.Int
+	fvalues := []*Field{}
+	h := big.NewInt(0)
+	for i := 0; i < len(cmd); {
+		v := big.NewInt(0)
+		j := 0
+		for ; j < 3; j++ {
+			if i+j < len(cmd) {
+				shift := new(big.Int).Lsh(cmd[i+j], uint(64*j))
+				v.Add(v, shift)
+				hshift := new(big.Int).Lsh(cmd[i+j], uint(64*(j+i)))
+				h.Add(h, hshift)
+			}
+		}
+		i += j
+		fvalues = append(fvalues, NewField(v))
+	}
+	H = PoseidonHash(fvalues).v
 	fmt.Println("H:", H)
 	hbn := NewCurveField(H)
+	msgbn := NewCurveField(h)
 	S := r.Add(pkey.key.Mul(hbn))
 	pubkey := pkey.PublicKey()
 	data := map[string]string{
-		"msg":  BnToHexLe(hbn.v),
+		"msg":  BnToHexLe(msgbn.v),
+		"hash": BnToHexLe(hbn.v),
 		"pkx":  BnToHexLe(pubkey.key.x.v),
 		"pky":  BnToHexLe(pubkey.key.y.v),
 		"sigx": BnToHexLe(R.x.v),
