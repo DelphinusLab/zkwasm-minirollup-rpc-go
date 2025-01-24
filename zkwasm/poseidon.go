@@ -1,10 +1,7 @@
 package zkwasm
 
 import (
-	"fmt"
 	"math/big"
-
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 func pow5(a *Field) *Field {
@@ -46,16 +43,15 @@ func applySparseMatrix(matrix map[string][]string, state []*Field) []*Field {
 		words[i] = NewField(state[i].v)
 	}
 	state0 := NewField(big.NewInt(0))
-	hexutil.EncodeBig()
+
 	for i := range words {
-		fmt.Println("matrix:", matrix["row"][i])
-		fmt.Println(new(big.Int).SetBytes([]byte(matrix["row"][i])))
-		f := NewField(new(big.Int).SetBytes([]byte(matrix["row"][i])))
+		rowI := matrix["row"][i]
+		f := NewField(HexToBigInt(rowI))
 		state0 = state0.Add(f.Mul(words[i]))
 	}
 	state[0] = state0
 	for i := 1; i < len(words); i++ {
-		hat := NewField(new(big.Int).SetBytes([]byte(matrix["col_hat"][i-1])))
+		hat := NewField(HexToBigInt(matrix["col_hat"][i-1]))
 		state[i] = hat.Mul(words[0]).Add(words[i])
 	}
 	return state
@@ -64,7 +60,7 @@ func applySparseMatrix(matrix map[string][]string, state []*Field) []*Field {
 func toFieldArray(arr []string) []*Field {
 	fields := make([]*Field, len(arr))
 	for i, value := range arr {
-		fields[i] = NewField(new(big.Int).SetBytes([]byte(value)))
+		fields[i] = NewField(HexToBigInt(value))
 	}
 	return fields
 }
@@ -97,7 +93,7 @@ func NewPoseidon(config map[string]interface{}) *Poseidon {
 	for i := range state {
 		state[i] = NewField(big.NewInt(0))
 	}
-	state[0] = NewField(new(big.Int).SetBytes([]byte("0000000000000000000000000000000000000000000000010000000000000000")))
+	state[0] = NewField(HexToBigInt("0000000000000000000000000000000000000000000000010000000000000000"))
 	return &Poseidon{
 		state:      state,
 		absortbing: []*Field{},
@@ -139,7 +135,7 @@ func (p *Poseidon) permute() {
 	}
 	for i := 0; i < len(partialConstantsStr) && i < len(sparseMatricesMap); i++ {
 		p.state[0] = pow5(p.state[0])
-		p.state[0] = p.state[0].Add(NewField(new(big.Int).SetBytes([]byte(partialConstantsStr[i]))))
+		p.state[0] = p.state[0].Add(NewField(HexToBigInt(partialConstantsStr[i])))
 		applySparseMatrix(sparseMatricesMap[i], p.state)
 	}
 
