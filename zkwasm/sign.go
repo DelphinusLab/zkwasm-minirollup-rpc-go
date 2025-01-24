@@ -111,29 +111,39 @@ func Sign(cmd []*big.Int, prikey string) map[string]string {
 	var H *big.Int
 	fvalues := []*Field{}
 	h := big.NewInt(0)
+
 	for i := 0; i < len(cmd); {
+		currentI := i // 保存当前外层循环的 i
 		v := big.NewInt(0)
 		j := 0
 		for ; j < 3; j++ {
-			if i+j < len(cmd) {
-				shift := new(big.Int).Lsh(cmd[i+j], uint(64*j))
+			if currentI+j < len(cmd) {
+				// 计算 v 和 h 的位移（使用 currentI 而非动态 i）
+				shift := new(big.Int).Lsh(cmd[currentI+j], uint(64*j))
 				v.Add(v, shift)
-				hshift := new(big.Int).Lsh(cmd[i+j], uint(64*(j+i)))
+
+				hshiftBits := 64 * (currentI + j) // 正确位移位数
+				hshift := new(big.Int).Lsh(cmd[currentI+j], uint(hshiftBits))
 				h.Add(h, hshift)
 			}
 		}
-		i += j
+		i += j // 更新外层循环的 i
 		fvalues = append(fvalues, NewField(v))
 	}
 	H = PoseidonHash(fvalues).v
 	fmt.Println("H:", H)
-	hbn := NewCurveField(H)
-	msgbn := NewCurveField(h)
-	S := r.Add(pkey.key.Mul(hbn))
+	hbn := H
+	msgbn := h
+
+	// 仅在曲线运算时使用 CurveField
+	hbnCurve := NewCurveField(hbn)
+	S := r.Add(pkey.key.Mul(hbnCurve))
 	pubkey := pkey.PublicKey()
+	fmt.Println("msgbn:", msgbn.String())
+	fmt.Println("hbn:", hbn.String())
 	data := map[string]string{
-		"msg":  BnToHexLe(msgbn.v, len(cmd)*8),
-		"hash": BnToHexLe(hbn.v, 32),
+		"msg":  BnToHexLe(msgbn, len(cmd)*8),
+		"hash": BnToHexLe(hbn, 32),
 		"pkx":  BnToHexLe(pubkey.key.x.v, 32),
 		"pky":  BnToHexLe(pubkey.key.y.v, 32),
 		"sigx": BnToHexLe(R.x.v, 32),

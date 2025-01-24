@@ -67,6 +67,7 @@ func (rpc *ZKWasmAppRpc) SendTransaction(cmd []*big.Int, prikey string) (string,
 				}
 				return string(marshal), nil
 			} else if jobStatus["failedReason"] != nil {
+				fmt.Println("failedReason:", jobStatus["failedReason"])
 				return "", errors.New(jobStatus["failedReason"].(string))
 			}
 		}
@@ -123,6 +124,7 @@ func (rpc *ZKWasmAppRpc) CreateCommand(nonce, command *big.Int, params []*big.In
 
 	buf := []*big.Int{cmd}
 	buf = append(buf, params...)
+	fmt.Println(buf)
 	return buf
 }
 
@@ -163,7 +165,6 @@ func (rpc *ZKWasmAppRpc) GetNonce(prikey string) (*big.Int, error) {
 		return big.NewInt(0), nil
 	} else {
 		playerMap := player.(map[string]interface{})
-		fmt.Println("player:", player)
 		return big.NewInt(int64(playerMap["nonce"].(float64))), nil
 	}
 }
