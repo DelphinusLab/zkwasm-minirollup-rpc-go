@@ -25,6 +25,7 @@ func NewZKWasmAppRpc(baseURL string) *ZKWasmAppRpc {
 func (rpc *ZKWasmAppRpc) sendRawTransaction(cmd []*big.Int, prikey string) (map[string]interface{}, error) {
 	data := Sign(cmd, prikey)
 	jsonData, err := json.Marshal(data)
+	fmt.Println("sendRawTransaction:", string(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +80,7 @@ func (rpc *ZKWasmAppRpc) QueryState(prikey string) (map[string]interface{}, erro
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("QueryState:", string(jsonData))
 	resp, err := rpc.client.Post(fmt.Sprintf("%s/query", rpc.baseURL), "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
@@ -115,12 +116,14 @@ func (rpc *ZKWasmAppRpc) QueryConfig() (map[string]interface{}, error) {
 	return nil, errors.New("QueryConfigError")
 }
 
-func (rpc *ZKWasmAppRpc) CreateCommand(nonce, command, objindex *big.Int) *big.Int {
-	bigNonce0 := new(big.Int).Lsh(nonce, 16) // cmd[1] << 16
-	bigObj2 := new(big.Int).Lsh(objindex, 8) // cmd[3] << 0
-	cmd := new(big.Int).Add(bigNonce0, bigObj2)
-	cmd = cmd.Add(cmd, command)
-	return cmd
+func (rpc *ZKWasmAppRpc) CreateCommand(nonce, command *big.Int, params []*big.Int) []*big.Int {
+	cmd := new(big.Int).Lsh(nonce, 16)
+	cmd.Add(cmd, new(big.Int).Lsh(big.NewInt(int64(len(params)+1)), 8))
+	cmd.Add(cmd, command)
+
+	buf := []*big.Int{cmd}
+	buf = append(buf, params...)
+	return buf
 }
 
 func (rpc *ZKWasmAppRpc) queryJobStatus(jobID string) (map[string]interface{}, error) {

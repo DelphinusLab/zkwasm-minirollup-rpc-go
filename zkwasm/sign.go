@@ -48,12 +48,12 @@ func U8ToHex(u8Array []byte) string {
 }
 
 // Convert a big integer to a little-endian hex string
-func BnToHexLe(n *big.Int) string {
+func BnToHexLe(n *big.Int, sz int) string {
 	// Convert the integer to bytes in little-endian order
 	bytesLe := n.Bytes()
 	// Ensure the result is 32 bytes
-	if len(bytesLe) < 32 {
-		pad := make([]byte, 32-len(bytesLe))
+	if len(bytesLe) < sz {
+		pad := make([]byte, sz-len(bytesLe))
 		bytesLe = append(pad, bytesLe...)
 	}
 	// Convert the bytes to hex
@@ -132,13 +132,13 @@ func Sign(cmd []*big.Int, prikey string) map[string]string {
 	S := r.Add(pkey.key.Mul(hbn))
 	pubkey := pkey.PublicKey()
 	data := map[string]string{
-		"msg":  BnToHexLe(msgbn.v),
-		"hash": BnToHexLe(hbn.v),
-		"pkx":  BnToHexLe(pubkey.key.x.v),
-		"pky":  BnToHexLe(pubkey.key.y.v),
-		"sigx": BnToHexLe(R.x.v),
-		"sigy": BnToHexLe(R.y.v),
-		"sigr": BnToHexLe(S.v),
+		"msg":  BnToHexLe(msgbn.v, len(cmd)*8),
+		"hash": BnToHexLe(hbn.v, 32),
+		"pkx":  BnToHexLe(pubkey.key.x.v, 32),
+		"pky":  BnToHexLe(pubkey.key.y.v, 32),
+		"sigx": BnToHexLe(R.x.v, 32),
+		"sigy": BnToHexLe(R.y.v, 32),
+		"sigr": BnToHexLe(S.v, 32),
 	}
 	return data
 }
@@ -148,7 +148,7 @@ func Query(prikey string) map[string]string {
 	pkey := PrivateKeyFromString(prikey)
 	pubkey := pkey.PublicKey()
 	data := map[string]string{
-		"pkx": BnToHexLe(pubkey.key.x.v),
+		"pkx": BnToHexLe(pubkey.key.x.v, 32),
 	}
 	return data
 }
@@ -157,7 +157,7 @@ func Query(prikey string) map[string]string {
 func GetPid(prikey string) (*big.Int, *big.Int) {
 	pkey := PrivateKeyFromString(prikey)
 	pubkey := pkey.PublicKey()
-	pidKey := BnToHexLe(pubkey.key.x.v)
+	pidKey := BnToHexLe(pubkey.key.x.v, 32)
 	pidAll := (&LeHexInt{pidKey}).ToU64Array()
 	pid1, pid2 := pidAll[1], pidAll[2]
 	return pid1, pid2

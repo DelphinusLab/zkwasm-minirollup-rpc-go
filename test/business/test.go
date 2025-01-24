@@ -46,7 +46,7 @@ func main() {
 	//clearRanch(zkwamRpc, prikey)
 
 	// 充值
-	//deposit(zkwamRpc, prikey)
+	//deposit(zkwamRpc, "123123123")
 
 	// 查询状态
 	state, _ = zkwamRpc.QueryState(prikey)
@@ -56,8 +56,8 @@ func main() {
 // 初始化玩家
 func initPlayer(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	// 获取配置
-	cmd := zkwamRpc.CreateCommand(big.NewInt(0), InitPlayerCmd, big.NewInt(0))
-	transaction, _ := zkwamRpc.SendTransaction([]*big.Int{cmd, big.NewInt(0), big.NewInt(0), big.NewInt(0)}, prikey)
+	cmd := zkwamRpc.CreateCommand(big.NewInt(0), InitPlayerCmd, []*big.Int{})
+	transaction, _ := zkwamRpc.SendTransaction(cmd, prikey)
 	fmt.Println("transaction:", transaction)
 }
 
@@ -66,8 +66,8 @@ func buyElf(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	nonce, _ := zkwamRpc.GetNonce(prikey)
 	ranchId := big.NewInt(1)
 	elfType := big.NewInt(1)
-	cmd := zkwamRpc.CreateCommand(nonce, BuyElfCmd, big.NewInt(0))
-	transaction, _ := zkwamRpc.SendTransaction([]*big.Int{cmd, ranchId, elfType, big.NewInt(0)}, prikey)
+	cmd := zkwamRpc.CreateCommand(nonce, BuyElfCmd, []*big.Int{ranchId, elfType})
+	transaction, _ := zkwamRpc.SendTransaction(cmd, prikey)
 	fmt.Println("transaction:", transaction)
 }
 
@@ -76,8 +76,8 @@ func collectCoin(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	nonce, _ := zkwamRpc.GetNonce(prikey)
 	ranchId := big.NewInt(1)
 	elfId := big.NewInt(1)
-	cmd := zkwamRpc.CreateCommand(nonce, CollectCoinCmd, big.NewInt(0))
-	transaction, _ := zkwamRpc.SendTransaction([]*big.Int{cmd, ranchId, elfId, big.NewInt(0)}, prikey)
+	cmd := zkwamRpc.CreateCommand(nonce, CollectCoinCmd, []*big.Int{ranchId, elfId})
+	transaction, _ := zkwamRpc.SendTransaction(cmd, prikey)
 	fmt.Println("transaction:", transaction)
 }
 
@@ -85,18 +85,18 @@ func collectCoin(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 func clearRanch(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	nonce, _ := zkwamRpc.GetNonce(prikey)
 	ranchId := big.NewInt(1)
-	cmd := zkwamRpc.CreateCommand(nonce, CleanRanchCmd, big.NewInt(0))
-	transaction, _ := zkwamRpc.SendTransaction([]*big.Int{cmd, ranchId, big.NewInt(0), big.NewInt(0)}, prikey)
+	cmd := zkwamRpc.CreateCommand(nonce, CleanRanchCmd, []*big.Int{ranchId})
+	transaction, _ := zkwamRpc.SendTransaction(cmd, prikey)
 	fmt.Println("transaction:", transaction)
 }
 
 func deposit(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
+
+	initPlayer(zkwamRpc, prikey)
 	pid1, pid2 := zkwasm.GetPid(prikey)
-	ranchId := big.NewInt(590)
-	propType := big.NewInt(89)
-	depositP := new(big.Int).Lsh(ranchId, 32)
-	depositP.Add(depositP, propType)
-	cmd := zkwamRpc.CreateCommand(big.NewInt(0), DepositCmd, big.NewInt(0))
-	transaction, _ := zkwamRpc.SendTransaction([]*big.Int{cmd, pid1, pid2, depositP}, prikey)
+	ranchId := big.NewInt(1)
+	propType := big.NewInt(1)
+	cmd := zkwamRpc.CreateCommand(big.NewInt(0), DepositCmd, []*big.Int{pid1, pid2, ranchId, propType})
+	transaction, _ := zkwamRpc.SendTransaction(cmd, prikey)
 	fmt.Println("transaction:", transaction)
 }

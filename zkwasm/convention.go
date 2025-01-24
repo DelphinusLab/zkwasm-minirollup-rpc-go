@@ -21,7 +21,7 @@ func bytesToDecimal(bytes []byte) string {
 	return sb.String()
 }
 
-func composeWithdrawParams(address string, amount *big.Int) ([]*big.Int, error) {
+func (pc *PlayerConvention) composeWithdrawParams(address string, nonce, command, amount, tokenIndex *big.Int) ([]*big.Int, error) {
 	addressBytes, err := hex.DecodeString(address)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func composeWithdrawParams(address string, amount *big.Int) ([]*big.Int, error) 
 	sndLimb := new(big.Int).SetBytes(reverseBytes(addressBytes[4:12]))
 	thirdLimb := new(big.Int).SetBytes(reverseBytes(addressBytes[12:20]))
 	one := new(big.Int).Add(new(big.Int).Lsh(firstLimb, 32), amount)
-	return []*big.Int{one, sndLimb, thirdLimb}, nil
+	return pc.createCommand(nonce, command, []*big.Int{tokenIndex, one, sndLimb, thirdLimb}), nil
 }
 
 func decodeWithdraw(txdata []byte) ([]map[string]interface{}, error) {
@@ -78,12 +78,14 @@ func NewPlayerConvention(key string, rpc *ZKWasmAppRpc, commandDeposit, commandW
 	}
 }
 
-func (pc *PlayerConvention) createCommand(nonce, command, objindex *big.Int) *big.Int {
-	bigNonce0 := new(big.Int).Lsh(nonce, 16) // cmd[1] << 16
-	bigCmd0 := new(big.Int).Lsh(command, 8)  // cmd[2] << 8
-	cmd := new(big.Int).Add(bigNonce0, bigCmd0)
-	cmd = cmd.Add(cmd, objindex)
-	return cmd
+func (pc *PlayerConvention) createCommand(nonce, command *big.Int, params []*big.Int) []*big.Int {
+	cmd := new(big.Int).Lsh(nonce, 16)
+	cmd.Add(cmd, new(big.Int).Lsh(big.NewInt(int64(len(params)+1)), 8))
+	cmd.Add(cmd, command)
+
+	buf := []*big.Int{cmd}
+	buf = append(buf, params...)
+	return buf
 }
 
 func (pc *PlayerConvention) getConfig() (map[string]interface{}, error) {
@@ -131,12 +133,8 @@ func (pc *PlayerConvention) Deposit(pid1, pid2, amount *big.Int) (string, error)
 	if err != nil {
 		return "", err
 	}
-	return pc.rpc.SendTransaction([]*big.Int{
-		pc.createCommand(nonce, pc.commandDeposit, big.NewInt(0)),
-		pid1,
-		pid2,
-		amount,
-	}, pc.processingKey)
+	return pc.rpc.SendTransaction(
+		pc.createCommand(nonce, pc.commandDeposit, []*big.Int{pid1, pid2, amount}), pc.processingKey)
 }
 
 func (pc *PlayerConvention) WithdrawRewards(address string, amount *big.Int) (string, error) {
@@ -144,14 +142,9 @@ func (pc *PlayerConvention) WithdrawRewards(address string, amount *big.Int) (st
 	if err != nil {
 		return "", err
 	}
-	params, err := composeWithdrawParams(address, amount)
+	params, err := pc.composeWithdrawParams(address, nonce, pc.commandWithdraw, amount, big.NewInt(0))
 	if err != nil {
 		return "", err
 	}
-	return pc.rpc.SendTransaction([]*big.Int{
-		pc.createCommand(nonce, pc.commandWithdraw, big.NewInt(0)),
-		params[0],
-		params[1],
-		params[2],
-	}, pc.processingKey)
+	return pc.rpc.SendTransaction(params, pc.processingKey)
 }
