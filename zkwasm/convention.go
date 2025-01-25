@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"strconv"
 	"strings"
@@ -21,16 +22,13 @@ func bytesToDecimal(bytes []byte) string {
 	return sb.String()
 }
 
-func (pc *PlayerConvention) composeWithdrawParams(address string, nonce, command, amount, tokenIndex *big.Int) ([]*big.Int, error) {
-	addressBytes, err := hex.DecodeString(address)
-	if err != nil {
-		return nil, err
-	}
+func (pc *PlayerConvention) ComposeWithdrawParams(address common.Address, nonce, command, amount, tokenIndex *big.Int) ([]*big.Int, error) {
+	addressBytes := address.Bytes()
 	firstLimb := new(big.Int).SetBytes(reverseBytes(addressBytes[:4]))
 	sndLimb := new(big.Int).SetBytes(reverseBytes(addressBytes[4:12]))
 	thirdLimb := new(big.Int).SetBytes(reverseBytes(addressBytes[12:20]))
 	one := new(big.Int).Add(new(big.Int).Lsh(firstLimb, 32), amount)
-	return pc.createCommand(nonce, command, []*big.Int{tokenIndex, one, sndLimb, thirdLimb}), nil
+	return pc.CreateCommand(nonce, command, []*big.Int{tokenIndex, one, sndLimb, thirdLimb}), nil
 }
 
 func decodeWithdraw(txdata []byte) ([]map[string]interface{}, error) {
@@ -78,7 +76,7 @@ func NewPlayerConvention(key string, rpc *ZKWasmAppRpc, commandDeposit, commandW
 	}
 }
 
-func (pc *PlayerConvention) createCommand(nonce, command *big.Int, params []*big.Int) []*big.Int {
+func (pc *PlayerConvention) CreateCommand(nonce, command *big.Int, params []*big.Int) []*big.Int {
 	cmd := new(big.Int).Lsh(nonce, 16)
 	cmd.Add(cmd, new(big.Int).Lsh(big.NewInt(int64(len(params)+1)), 8))
 	cmd.Add(cmd, command)
@@ -134,15 +132,15 @@ func (pc *PlayerConvention) Deposit(pid1, pid2, amount *big.Int) (string, error)
 		return "", err
 	}
 	return pc.rpc.SendTransaction(
-		pc.createCommand(nonce, pc.commandDeposit, []*big.Int{pid1, pid2, amount}), pc.processingKey)
+		pc.CreateCommand(nonce, pc.commandDeposit, []*big.Int{pid1, pid2, amount}), pc.processingKey)
 }
 
-func (pc *PlayerConvention) WithdrawRewards(address string, amount *big.Int) (string, error) {
+func (pc *PlayerConvention) WithdrawRewards(address common.Address, amount *big.Int) (string, error) {
 	nonce, err := pc.getNonce()
 	if err != nil {
 		return "", err
 	}
-	params, err := pc.composeWithdrawParams(address, nonce, pc.commandWithdraw, amount, big.NewInt(0))
+	params, err := pc.ComposeWithdrawParams(address, nonce, pc.commandWithdraw, amount, big.NewInt(0))
 	if err != nil {
 		return "", err
 	}

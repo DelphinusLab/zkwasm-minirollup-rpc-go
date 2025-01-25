@@ -38,7 +38,7 @@ var (
 )
 
 func main() {
-	prikey := "12345"
+	prikey := "1234"
 	pid1, pid2 := zkwasm.GetPid(prikey)
 
 	fmt.Println("pid1:", pid1.Uint64())
@@ -76,7 +76,7 @@ func main() {
 
 	// 充值
 	//deposit(zkwamRpc, "126532")
-	//withdraw(zkwamRpc, prikey)
+	withdraw(zkwamRpc, prikey)
 
 	// 查询状态
 	getState(zkwamRpc, prikey)
@@ -192,7 +192,7 @@ func withdraw(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	fmt.Println("提现")
 	nonce, _ := zkwamRpc.GetNonce(prikey)
 	address := common.HexToAddress("0xae1e3ffa0a95b7c11cfd0a8f02d3250f20b51ff2")
-	cmd, _ := zkwamRpc.ComposeWithdrawParams(address, nonce, WithdrawCmd, big.NewInt(1), big.NewInt(0))
+	cmd, _ := zkwamRpc.ComposeWithdrawParams(address, nonce, WithdrawCmd, big.NewInt(23), big.NewInt(0))
 	transaction, _ := zkwamRpc.SendTransaction(cmd, prikey)
 	fmt.Println("提现:", transaction)
 }
