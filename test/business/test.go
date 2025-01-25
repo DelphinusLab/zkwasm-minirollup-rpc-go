@@ -44,8 +44,8 @@ func main() {
 	fmt.Println("pid1:", pid1.Uint64())
 	fmt.Println("pid2:", pid2.Uint64())
 
-	zkwamRpc := zkwasm.NewZKWasmAppRpc("http://localhost:3000")
-	//zkwamRpc := zkwasm.NewZKWasmAppRpc("https://zk-server.pumpelf.ai")
+	//zkwamRpc := zkwasm.NewZKWasmAppRpc("http://localhost:3000")
+	zkwamRpc := zkwasm.NewZKWasmAppRpc("https://zk-server.pumpelf.ai")
 
 	// 收集金币
 	//nonce, _ := zkwamRpc.GetNonce(prikey)

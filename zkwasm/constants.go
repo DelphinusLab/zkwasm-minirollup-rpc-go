@@ -29,7 +29,6 @@ func toBigInt(numStr string) *big.Int {
 
 func HexToBigInt(hexStr string) *big.Int {
 	bytes := common.FromHex(hexStr)
-
 	// 将字节切片转换为 big.Int
 	bigInt := new(big.Int).SetBytes(bytes)
 
