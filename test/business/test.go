@@ -45,6 +45,8 @@ func main() {
 	fmt.Println("pid2:", pid2.Uint64())
 
 	zkwamRpc := zkwasm.NewZKWasmAppRpc("http://localhost:3000")
+	//zkwamRpc := zkwasm.NewZKWasmAppRpc("https://zk-server.pumpelf.ai")
+
 	// 收集金币
 	//nonce, _ := zkwamRpc.GetNonce(prikey)
 	//cmd := zkwamRpc.CreateCommand(nonce, big.NewInt(11), big.NewInt(0))
@@ -52,9 +54,9 @@ func main() {
 	//transaction, _ := zkwamRpc.SendTransaction([4]*big.Int{cmd, big.NewInt(1), big.NewInt(1), big.NewInt(0)}, prikey)
 	//fmt.Println("transaction:", transaction)
 	// 初始化玩家
-	initPlayer(zkwamRpc, prikey)
+	//initPlayer(zkwamRpc, prikey)
 	// 购买宠物
-	buyElf(zkwamRpc, prikey)
+	//buyElf(zkwamRpc, prikey)
 
 	// 购买食物道具
 	//buyFoodProp(zkwamRpc, prikey)
@@ -74,7 +76,7 @@ func main() {
 
 	// 充值
 	//deposit(zkwamRpc, "126532")
-	withdraw(zkwamRpc, prikey)
+	//withdraw(zkwamRpc, prikey)
 
 	// 查询状态
 	getState(zkwamRpc, prikey)
@@ -190,7 +192,7 @@ func withdraw(zkwamRpc *zkwasm.ZKWasmAppRpc, prikey string) {
 	fmt.Println("提现")
 	nonce, _ := zkwamRpc.GetNonce(prikey)
 	address := common.HexToAddress("0xae1e3ffa0a95b7c11cfd0a8f02d3250f20b51ff2")
-	cmd, _ := zkwamRpc.ComposeWithdrawParams(address, nonce, WithdrawCmd, big.NewInt(100), big.NewInt(0))
+	cmd, _ := zkwamRpc.ComposeWithdrawParams(address, nonce, WithdrawCmd, big.NewInt(1), big.NewInt(0))
 	transaction, _ := zkwamRpc.SendTransaction(cmd, prikey)
 	fmt.Println("提现:", transaction)
 }
